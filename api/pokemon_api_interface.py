@@ -5,6 +5,9 @@ from common.models import Pokemon
 
 
 class PokemonAPI(ABC):
+    """
+    Abstract API interface class
+    """
     @classmethod
     def __call_pokemon_api(cls, base_url: str) -> Dict:
         pass
