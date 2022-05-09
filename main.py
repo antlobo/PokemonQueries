@@ -1,37 +1,8 @@
 import datetime
-import json
-import logging.config
-import os
-from typing import NoReturn
 
-from pokeapi_func import PokemonAPI
-
-
-pkm_api = PokemonAPI()
-
-
-def setup_logging(
-        default_path='resources/logging.json',
-        default_level=logging.INFO,
-        env_key='LOG_CFG') -> NoReturn:
-    """
-    Configure logging capabilities
-    :param default_path: path to search for the logging configuration
-    :param default_level: default level to log
-    :param env_key: if using environment variable instead of default_path
-    :return: it doesn't return a value
-    """
-    path = default_path
-    value = os.getenv(env_key, None)
-    if value:
-        path = value
-    if os.path.exists(path):
-        with open(path, 'rt') as f:
-            config = json.load(f)
-        logging.config.dictConfig(config)
-    else:
-        logging.basicConfig(level=default_level,
-                            format="%(asctime)s - %(name)-15s - %(funcName)-15s - %(levelname)-8s - %(message)-10s")
+from logging_app import setup_logging
+from api import pokeapi
+from app import pokemon_app
 
 
 def check_pokemon_name(pokemon_name: str, options: dict) -> bool:
@@ -41,7 +12,7 @@ def check_pokemon_name(pokemon_name: str, options: dict) -> bool:
 
 # Main functions
 def count_pokemons_named_with(options: dict) -> int:
-    pokemons = pkm_api.get_all_pokemons_name()
+    pokemons = pokemon_app.get_all_pokemons()
     count = 0
     for pokemon in pokemons:
         if check_pokemon_name(pokemon.name, options):
@@ -51,22 +22,22 @@ def count_pokemons_named_with(options: dict) -> int:
 
 
 def count_pokemon_species_to_procreate_with(pokemon_name: str = "raichu") -> int:
-    egg_groups = pkm_api.get_pokemon_egg_group(pokemon_name)
+    egg_groups = pokemon_app.get_egg_group_of(pokemon_name)
     pokemons = set()
     for egg_group in egg_groups:
         pokemons = pokemons.union(
-            set(pkm_api.get_all_pokemons_by_egg_group(egg_group))
+            set(pokemon_app.get_pokemons_by_egg_group(egg_group))
         )
 
     return len(pokemons)
 
 
 def get_minimum_maximum_weight_by_type(pokemon_type: str = "fighting") -> list:
-    pokemons = pkm_api.get_all_pokemons_by_type(pokemon_type)
+    pokemons = pokemon_app.get_pokemons_by_type(pokemon_type)
 
     for pokemon in pokemons:
         if pokemon.is_first_gen():
-            pokemon.weight = pkm_api.get_pokemon_weight(pokemon)
+            pokemon.weight = pokemon_app.get_weight_of(pokemon)
 
     pokemons_first_gen_weight = [pokemon.weight for pokemon in pokemons if pokemon.weight]
     if pokemons_first_gen_weight:
@@ -97,6 +68,7 @@ def main():
 
 if __name__ == "__main__":
     start = datetime.datetime.now()
+    pokemon_app.api_class = pokeapi
     setup_logging()
     main()
     end = datetime.datetime.now()

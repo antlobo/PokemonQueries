@@ -3,7 +3,8 @@ import logging
 from time import sleep
 from typing import List
 
-from models import Pokemon
+from common.models import Pokemon
+from api.pokemon_api_interface import PokemonAPI
 
 import requests
 from requests.adapters import HTTPAdapter
@@ -12,7 +13,7 @@ from urllib3 import Retry
 logger = logging.getLogger(__name__)
 
 
-class PokemonAPI:
+class PokeAPI(PokemonAPI):
     __HEADERS = {'Content-Type': 'application/json'}
     __TIME_WAIT_BETWEEN_API_QUERIES = 1
 
